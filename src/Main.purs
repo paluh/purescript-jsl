@@ -188,10 +188,6 @@ liftF f = Free (map Pure f)
 
 data SVar' var a i = SVar' (Expr var i) (Expr var i → a)
 
--- data SFun var o' i o = Lam (Expr var i → Expr var o) (i → Expr var i) ((i → o) ~ o')
--- data SFunApp var o i = App (Expr var (i → o)) (Expr var i)
--- data SFun' var o' o i = SFun' (Expr var i → Statement var o) ((Expr var (Expr var i → Statement var o)) → a)
-
 data StatementF var a
   = SRandom (Expr var Number → a)
   | SConsoleLog (Expr var String) a
