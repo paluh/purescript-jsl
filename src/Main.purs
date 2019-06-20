@@ -6,8 +6,7 @@ import Control.Monad.Writer (Writer, execWriter, tell)
 import Data.Array (singleton) as Array
 import Data.Exists (Exists, mkExists, runExists)
 import Data.Leibniz (type (~), coerce)
-import Data.List (List)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Effect.Random (random) as Random
@@ -66,6 +65,7 @@ data Expr var a
   | ELam (Exists2 (Lam var a))
   | EApp (Exists (App var a))
   | EVar var
+-- | Just for testing
   | EToString (Expr var Number) (String ~ a)
 -- | EArr (Exists (ArrayExpr a))
 --
