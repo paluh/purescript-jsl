@@ -62,26 +62,23 @@ data Expr var a
   | ESub (Expr var Number) (Expr var Number) (Number ~ a)
   | EMul (Expr var Number) (Expr var Number) (Number ~ a)
   | EDiv (Expr var Number) (Expr var Number) (Number ~ a)
-  | EToString (Expr var Number) (String ~ a)
-  | EZero (Number ~ a)
-  | EOne (Number ~ a)
-  | EEmptyStr (String ~ a)
   | EAppendStr (Expr var String) (Expr var String) (String ~ a)
   | ELam (Exists2 (Lam var a))
   | EApp (Exists (App var a))
   | EVar var
+  | EToString (Expr var Number) (String ~ a)
 -- | EArr (Exists (ArrayExpr a))
 --
 instance monoidExprString ∷ Monoid (Expr var String) where
-  mempty = EEmptyStr identity
+  mempty = ELit (LString "" identity)
 
 instance semigroupExprString ∷ Semigroup (Expr var String) where
   append s1 s2 = EAppendStr s1 s2 identity
 
 instance semiringExprNum ∷ Semiring (Expr var Number) where
-  zero = EZero identity
+  zero = ELit (LNum 0.0 identity)
   add e1 e2 = EAdd e1 e2 identity
-  one = EOne identity
+  one = ELit (LNum 1.0 identity)
   mul e1 e2 = EMul e1 e2 identity
 
 instance ringExprNum ∷ Ring (Expr var Number) where
@@ -96,7 +93,6 @@ instance euclideanRingExprNum ∷ EuclideanRing (Expr var Number) where
 
 -- -- arr ∷ ∀ e. Array (Expr var e) → Expr var (Array e)
 -- -- arr exprs = EArr $ mkExists (ArrayExpr exprs identity)
--- 
 interpretBinary' ∷ ∀ a. (a → a → a) → Expr Void a → Expr Void a → a
 interpretBinary' op e1 e2 = op (interpret' e1) (interpret' e2)
 
@@ -109,9 +105,6 @@ interpret' (ESub e1 e2 proof) = coerce proof $ interpretBinary' (-) e1 e2
 interpret' (EMul e1 e2 proof) = coerce proof $ interpretBinary' (*) e1 e2
 interpret' (EDiv e1 e2 proof) = coerce proof $ interpretBinary' (/) e1 e2
 interpret' (EToString e proof) = coerce proof $ (show $ interpret' e)
-interpret' (EZero proof) = coerce proof 0.0
-interpret' (EOne proof) = coerce proof 1.0
-interpret' (EEmptyStr proof) = coerce proof ""
 interpret' (EAppendStr s1 s2 proof) = coerce proof $ interpretBinary' append s1 s2
 interpret' (EApp app) =
   (runExists (\x → let App l arg = x in (interpret' l) (interpret' arg)) app)
@@ -133,9 +126,6 @@ interpret (EAdd n1 n2 _) = interpretBinary AST.Add n1 n2
 interpret (EMul n1 n2 _) = interpretBinary AST.Multiply n1 n2
 interpret (ESub n1 n2 _) = interpretBinary AST.Subtract n1 n2
 interpret (EDiv n1 n2 _) = interpretBinary AST.Divide n1 n2
-interpret (EZero _) = pure (JSNumericLiteral 0.0)
-interpret (EOne _) = pure (JSNumericLiteral 1.0)
-interpret (EEmptyStr _) = pure (JSStringLiteral "")
 interpret (EAppendStr s1 s2 _) = interpretBinary AST.Add s1 s2
 interpret (EVar n) = pure (JSVar n)
 interpret (EApp app) =
